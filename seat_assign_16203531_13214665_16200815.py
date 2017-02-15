@@ -60,14 +60,17 @@ def read_bookings(inp_fname = 'bookings.csv' ):
     bookingReader = csv.reader(bookingFile)
     for row in bookingReader:
         print("Value of " , str(bookingReader.line_num) , " th row is" ,  str(row)  )
+        confirm_booking(int(row[1]),row[0])
+        
+def load_seating_layout(db_name='airline_seating.db'):
        
 
-if __name__ == "__main__":
+ #if __name__ == "__main__":
     """
         This is the main function and its invoked by default when the python script is executed. Here lies the configuration 
         to starting point of the reservation system.
         
     """
     
-    read_bookings()
+    #read_bookings()
     
