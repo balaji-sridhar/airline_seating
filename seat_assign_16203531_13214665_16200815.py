@@ -2,7 +2,7 @@
 """
 Created on Fri Feb  3 22:38:31 2017
 
-@author: SubramanianB and MeadsA
+@author: SubramanianB,ShaliniS and MeadsA
 """
 import sqlite3 as sq
 import csv
@@ -61,7 +61,7 @@ def read_bookings(inp_fname = 'bookings.csv' ):
     for row in bookingReader:
         print("Value of " , str(bookingReader.line_num) , " th row is" ,  str(row)  )
        
-    
+
 def load_seating_layout(db_name='airline_seating.db'):
     
     """load_seeating_layout - This is used to store the flight plan into a variable 
@@ -80,6 +80,29 @@ def load_seating_layout(db_name='airline_seating.db'):
             seating_layout.append((row_no, seats))
     print("Seating layout loaded is: ", seating_layout)
 
+def load_seating_avail(db_name='airline_seating.db'):
+    """ 
+        load_seating_avail - This function is used to query the database to retrieve the availability
+        :param db_name: Name of the database file to be processed
+        
+    """
+    # TODO: First read the database and store it hash map
+    conn = sq.connect(db_name)
+    print("Connection value",conn)
+    curs = conn.cursor()
+    for rows in curs.execute('SELECT * FROM seating'):
+        row_num = rows[0]
+        seat_num = rows[1]
+        passenger_name = rows[2]
+        print(row_num, seat_num, passenger_name )
+        
+        if seating_avail.__contains__(row_num):
+            seating_avail[row_num][seat_num] = passenger_name 
+        else:
+            seating_avail[row_num] = {}
+            seating_avail[row_num][seat_num] = passenger_name 
+    print("Loaded seating layout is: ", seating_avail )
+    conn.close()    
 
 if __name__ == "__main__":
     """
