@@ -61,6 +61,25 @@ def read_bookings(inp_fname = 'bookings.csv' ):
     for row in bookingReader:
         print("Value of " , str(bookingReader.line_num) , " th row is" ,  str(row)  )
        
+    
+def load_seating_layout(db_name='airline_seating.db'):
+    
+    """load_seeating_layout - This is used to store the flight plan into a variable 
+        and verify if the number of seats in the booking can be accomodated
+        continiously. """
+
+    conn = sq.connect(db_name)
+    curs = conn.cursor()
+    for rows in curs.execute('SELECT * FROM rows_cols'):
+        #print(rows)
+        row_no = rows[0]
+        seats = rows[1]
+        if(row_no in seating_layout):
+            print(" row already exist in the seating layout")
+        else:
+            seating_layout.append((row_no, seats))
+    print("Seating layout loaded is: ", seating_layout)
+
 
 if __name__ == "__main__":
     """
