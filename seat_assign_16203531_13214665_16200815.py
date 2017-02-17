@@ -151,6 +151,33 @@ def update_seating(passenger_name, rowno, seat):
     #Calling the inser_dbrecord() to update the seat allocation
     insert_dbrecord(query,value)    
     
+def confirm_booking(passenger_count, passenger_name ):
+    """
+        confirm_booking - Does the booking confirmation if the number of seats requested are available. 
+        If not updates the reporting database.
+        :param passenger_count: Number of passengers
+        :param passenger_name: Name of the passengers
+    """
+    load_seating_layout()
+    load_seating_avail()
+    check_seating_avail(passenger_count,seating_avail,seating_layout[0][1])
+    if (consecutive_seats.__len__() < passenger_count and separated_seats.__len__() < passenger_count):
+        print("Current seat availability is less than ", passenger_count ,"seats")
+        print("Updated the passengers_refused metrics")
+        update_report(passenger_count)
+    elif (consecutive_seats.__len__() >= passenger_count ):
+        print("Consecutive seats are available for the reservation request")
+        for i in range(0, passenger_count):
+            print(passenger_name, consecutive_seats[i][0], consecutive_seats[i][1])
+            update_seating(passenger_name, consecutive_seats[i][0], consecutive_seats[i][1])
+        print("Updated the seating table and the reservation are completed successfully")
+    else:
+        print("Consecutive seats are not available for reservation request.")
+        for i in range(0, passenger_count):
+            print(passenger_name, separated_seats[i][0], separated_seats[i][1])
+            update_seating(passenger_name, separated_seats[i][0], separated_seats[i][1])
+        print("We will try to allocate seats as close as possible")
+        print("Updated the passengers_separated metrics")
     
 if __name__ == "__main__":
     """
