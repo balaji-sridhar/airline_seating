@@ -104,6 +104,54 @@ def load_seating_avail(db_name='airline_seating.db'):
     print("Loaded seating layout is: ", seating_avail )
     conn.close()    
 
+def insert_dbrecord(query, values, db_name='airline_seating.db' ):
+    """
+        insert_dbrecord - Inserts records into the database. Takes query to be executed and the values to be inserted
+        as the parameters.
+        :param query: Contains the SQLite query that needs to be executed 
+        :param values: Contains the list of the values to be passed on the query before execution
+        :param db_name: Name of the database file to be processed
+        
+    """
+    conn = sq.connect(db_name)
+    if(query != '' and query!= None):
+        conn.execute(query, values)
+        conn.commit()
+        print("Updated the record into database sucessfully")
+    else:
+        print("Empty sql sent for execution")
+    conn.close()
+    
+def update_report(refused = 0,separated = 0, db_name='airline_seating.db'):
+    """
+        Increases the number of refused and seprated passengers in the metrics table
+        :param refused: contains number of passengers refused
+        :param seprated: contains number of passengers whoes allocation is seprated
+        :param db_name: Name of the database file to be processed
+        Sample insert query : insert into metrics (passengers_refused, passengers_separated) values (1,2)
+        
+    """       
+    query = '''insert into metrics (passengers_refused, passengers_separated) values (?,?);'''
+    values = (refused, separated)
+    #Calling insert_dbrecord to update values in the database
+    insert_dbrecord(query,values)
+    
+def update_seating(passenger_name, rowno, seat):
+    """
+        update_seating - Updates the seating table using update sql query. Take row no and seat and find the corresponding
+        row from the table and updates the Passenger name against it.
+        :param passenger_name: Name of the passenger against which reservation has to made
+        :param rowno: Row number where the reservation has to made
+        :param seat: Seat number of the reservation to be made
+        Sample update query: update seating set name="Testing_Reservation1"  where row = 1 and seat = 'A';
+        
+    """
+    query = ''' update seating set name= ?  where row = ? and seat = ? ; '''
+    value = (passenger_name, rowno, seat)
+    #Calling the inser_dbrecord() to update the seat allocation
+    insert_dbrecord(query,value)    
+    
+    
 if __name__ == "__main__":
     """
         This is the main function and its invoked by default when the python script is executed. Here lies the configuration 
