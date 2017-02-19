@@ -1,5 +1,5 @@
 # airline_seating
-Airline seating reservation system 
+Airline seating reservation system, 
 In the first section of our code we have defined a class which will allocate the flight tickets by reading the database file.After reading the file we need to perform the seat allocation function i.e we need to find the next available sequence of seating, also we need to check if the number of seats available is greater than the request.If these two criterias are not satisfied we need to reject the request.
 In our code we have defined three dictionary which contains the seating layout.These are seating_dict which contains the seating layout, row_together_avail which contains the number of seats continuously available in each row and row_avail_dict which contaons the number of seats available in the row.
 As we are loading the seating_dict from the database we are refreshing  and updating the database everytime.
