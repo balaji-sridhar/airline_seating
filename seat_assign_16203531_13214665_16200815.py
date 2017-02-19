@@ -71,7 +71,6 @@ def load_seating_layout(db_name='airline_seating.db'):
     conn = sq.connect(db_name)
     curs = conn.cursor()
     for rows in curs.execute('SELECT * FROM rows_cols'):
-        #print(rows)
         row_no = rows[0]
         seats = rows[1]
         if(row_no in seating_layout):
