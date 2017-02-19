@@ -170,7 +170,7 @@ def confirm_booking(passenger_count, passenger_name ):
         for i in range(0, passenger_count):
             print(passenger_name, consecutive_seats[i][0], consecutive_seats[i][1])
             update_seating(passenger_name, consecutive_seats[i][0], consecutive_seats[i][1])
-        print("Updated the seating table and the reservation are completed successfully")
+        print("Updated the seating table and the reservations are completed successfully")
     else:
         print("Consecutive seats are not available for reservation request.")
         for i in range(0, passenger_count):
@@ -178,6 +178,36 @@ def confirm_booking(passenger_count, passenger_name ):
             update_seating(passenger_name, separated_seats[i][0], separated_seats[i][1])
         print("We will try to allocate seats as close as possible")
         print("Updated the passengers_separated metrics")
+        
+def check_seating_avail(passenger_count,seating_avail,seating_pattern):
+    """
+        check_seating_avail - Will iterate to all the rows and check if seats can be allocated together
+        1. Checks if the number seats can be allocated together
+        2. Checks if the number seats can be allocated randomly
+        3. Return the seats that can booked
+    """
+    consecutive_seats.clear()
+    separated_seats.clear()
+    print("______________",seating_avail)
+    for row_key, row_values in seating_avail.items():
+        print(row_key)
+        if(consecutive_seats.__len__() >= passenger_count ):
+            break;
+        else:
+            consecutive_seats.clear()
+            print("Sequence broken, resetting the consecutive pattern")
+                     
+    for col in seating_pattern:
+        if(row_values.__contains__(col)):
+            if ( row_values[col] == ""):
+                print("Seat is available in row ", row_key, " column ", col)
+                consecutive_seats.append((row_key, col))
+                separated_seats.append((row_key, col))
+            else:
+                print("Sequence broken, resetting the consecutive pattern")
+                consecutive_seats.clear()
+        print(consecutive_seats.__len__(), " Consecutive seats are: " , consecutive_seats)
+    print(separated_seats.__len__()," Separated seats are: ", separated_seats)    
     
 if __name__ == "__main__":
     """
