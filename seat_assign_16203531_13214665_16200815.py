@@ -2,7 +2,7 @@
 """
 Created on Fri Feb  3 22:38:31 2017
 
-@author: SubramanianB,ShaliniS and MeadsA
+@author: SubramanianB,ShaliniS and MeadeA
 """
 import sqlite3 as sq
 import csv
