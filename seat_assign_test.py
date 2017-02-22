@@ -27,7 +27,7 @@ class AirlineTests(unittest.TestCase):
 
     def test_refusal_count(self):
         self.longMessage = True
-        # Given - When the flight booking is empty
+        # Given - The flight booking is empty
         # And maximum seat capacity is 60
         # And Metrics table is empty
         testdb = "test_data\\empty_seating.db"
@@ -67,7 +67,7 @@ class AirlineTests(unittest.TestCase):
 
     def test_no_seats_available(self):
         self.longMessage = True
-        # Given - When flight is fully booked
+        # Given - The flight is fully booked
         # And Metrics table is empty
         testdb = "test_data\\fully_booked_seating.db"
         tempdb = "test_data\\temp_fully_booked_seating.db"
@@ -88,7 +88,7 @@ class AirlineTests(unittest.TestCase):
     def test_consecutive_bookings(self):
         print("Sample test")
         self.longMessage = True
-        # Given - When the are 4 consecutive seats and 2 non- consecutive seats available
+        # Given - The are 4 consecutive seats and 2 non- consecutive seats available
         # And Metrics table is empty
         testdb = "test_data\\consecutive_seating.db"
         tempdb = "test_data\\temp_consecutive_seating.db"
