@@ -32,7 +32,7 @@ class AirlineReservation:
     total_rows = 15             # Total number of rows available in flight
     total_noof_reservations = 0 # Total number of seats reserved in database
     total_noof_refusal = 0      # Tracks the number of seats/passengers that application refused to allocate seat
-    total_noof_sepration = 0    # Tracks the number of passenger allocated seats away for their group
+    total_noof_separation = 0    # Tracks the number of passenger allocated seats away for their group
     total_noof_reservation_req = 0  # Total number of requests handled by the application in a session
 
     def load_seating_layout(self, db_name='airline_seating.db'):
@@ -114,15 +114,16 @@ class AirlineReservation:
         query = '''insert into metrics (passengers_refused, passengers_separated) values (?,?);'''
         values = (refused, separated)
         # Calling insert_dbrecord to update values in the database
-        self.insert_dbrecord(query, values)
+        self.insert_dbrecord(query, values,db_name)
 
-    def update_seating(self, passenger_name, rowno, seat):
+    def update_seating(self, passenger_name, rowno, seat, db_name = 'airline_seating.db'):
         """
             update_seating - Updates the seating table using update sql query. Take row no and seat and find the corresponding
             row from the table and updates the Passenger name against it.
             :param passenger_name: Name of the passenger against which reservation has to made
             :param rowno: Row number where the reservation has to made
             :param seat: Seat number of the reservation to be made
+            :param db_name: Name of the database file to be processed
             Sample update query: update seating set name="Testing_Reservation1"  where row = 1 and seat = 'A';
 
         """
@@ -131,7 +132,7 @@ class AirlineReservation:
         query = ''' update seating set name= ?  where row = ? and seat = ? ; '''
         value = (passenger_name, rowno, seat)
         # Calling the insert_dbrecord() to update the seat allocation
-        self.insert_dbrecord(query, value)      # Executing query for reservation of seat
+        self.insert_dbrecord(query, value, db_name)      # Executing query for reservation of seat
 
     def check_seating_avail(self, passenger_count, seating_avail, seating_pattern):
         """
@@ -193,8 +194,8 @@ class AirlineReservation:
         for rows in curs.execute('SELECT * FROM metrics'):
             # Two variables, one to count the number of rejection and other to count the number of passenger separation
             self.total_noof_refusal = self.total_noof_refusal + int(rows[0])
-            self.total_noof_sepration = self.total_noof_sepration + int(rows[1])
-        print("Total number of seprations :", self.total_noof_sepration)
+            self.total_noof_separation = self.total_noof_separation + int(rows[1])
+        print("Total number of seprations :", self.total_noof_separation)
         print("Total number of refusals : ", self.total_noof_refusal)
         print("Total number of reservation requests handled in this session : ", self.total_noof_reservation_req)
         conn.close()
@@ -208,8 +209,8 @@ class AirlineReservation:
         """
         # This function servers as bulk processing or batch processing
         # Reads all the row in the passed csv file and confirms the booking
-        self.load_seating_layout()      # Load seating layout
-        self.load_seating_avail()       # Load seating availability
+        self.load_seating_layout(db_name)      # Load seating layout
+        self.load_seating_avail(db_name)       # Load seating availability
         # Check if the seats are available
         self.check_seating_avail(passenger_count, self.seating_avail, self.seating_layout[0][1])
         self.total_noof_reservation_req = self.total_noof_reservation_req + 1
@@ -224,7 +225,7 @@ class AirlineReservation:
             # Confirm seat bookings from list of consecutive seats
             for i in range(0, passenger_count):
                 print(passenger_name, self.consecutive_seats[i][0], self.consecutive_seats[i][1])
-                self.update_seating(passenger_name, self.consecutive_seats[i][0], self.consecutive_seats[i][1])
+                self.update_seating(passenger_name, self.consecutive_seats[i][0], self.consecutive_seats[i][1],db_name)
             print("Updated the seating table and the reservation is completed successfully")
         # If consecutive seats are not available, fall back to separated seats
         else:
@@ -232,7 +233,7 @@ class AirlineReservation:
             # Confirm seat bookings from list of separated seats
             for i in range(0, passenger_count):
                 print(passenger_name, self.separated_seats[i][0], self.separated_seats[i][1])
-                self.update_seating(passenger_name, self.separated_seats[i][0], self.separated_seats[i][1])
+                self.update_seating(passenger_name, self.separated_seats[i][0], self.separated_seats[i][1], db_name)
             print("We will try to allocate seats as close as possible")
             print(passenger_name, "'s Updated the passengers_separated metrics ", passenger_count)
             self.update_report(0, passenger_count, db_name)
@@ -252,7 +253,7 @@ class AirlineReservation:
         for row in bookingReader:
             # print("Value of " , str(bookingReader.line_num) , " th row is" ,  str(row)  )
             total_pass_in_req = total_pass_in_req + int(row[1])
-            self.confirm_booking(int(row[1]), row[0])
+            self.confirm_booking(int(row[1]), row[0],db_name)
 
         print("Number of passegers in the csv file :", total_pass_in_req)
         self.load_metrics(db_name)  # Now load the metrics
