@@ -106,7 +106,7 @@ class AirlineTests(unittest.TestCase):
         # Clean up temp database
         os.remove(tempdb)
 
-            def test_csv_loader(self):
+    def test_csv_loader(self):
         self.longMessage = True
         # Given - A csv file with 100 rows are available
         testdb = "test_data\\empty_seating.db"
@@ -118,7 +118,6 @@ class AirlineTests(unittest.TestCase):
         self.airlineReservation.read_bookings(tempcsv,tempdb)
         # Then - Total number of requests handled in the session should be 100
         self.assertEqual(5, self.airlineReservation.total_noof_reservation_req, 'Number of reservation request doesnt match')
-
         os.remove(tempdb)
 
     def test_check_seating_column(self):
