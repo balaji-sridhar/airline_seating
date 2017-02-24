@@ -31,7 +31,7 @@ class AirlineReservation:
     seating_avail = {}          # Contains the seating availability, i.e snapshot of database
     consecutive_seats = []      # List to store consecutive seats for reservation
     separated_seats = []        # List to store separated seats for reservation
-    seating_pattern = 'ACDEF'   # Seating pattern of rows and columns on the plane
+    seating_pattern = 'ACDF'   # Seating pattern of rows and columns on the plane
     total_rows = 15             # Total number of rows available on the plane
     total_noof_reservations = 0 # Total number of seats reserved in the database
     total_noof_refusal = 0      # Tracks the number of passengers that our application has rejected
