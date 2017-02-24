@@ -50,14 +50,12 @@ class AirlineReservation:
         # Iterate over the table, load the first row to determine flight layout
         # We assume that number of rows and column pattern is defined in first row or only one row is available
         for rows in curs.execute('SELECT * FROM rows_cols'):
-            # print(rows)
             row_no = rows[0]    # No: of rows in the flight
             seats = rows[1]     # Column pattern for each row
             if row_no in self.seating_layout:
                 print(" row already exist in the seating layout")
             else:
                 self.seating_layout.append((row_no, seats))
-        # print("Seating layout loaded is: ", self.seating_layout)
         conn.close()
 
     def load_seating_avail(self, db_name='airline_seating.db'):
@@ -67,14 +65,12 @@ class AirlineReservation:
 
         """
         conn = sq.connect(db_name)
-        # print("Connection value",conn)
         curs = conn.cursor()
         # Iterate over the seating table and load the current availability.
         for rows in curs.execute('SELECT * FROM seating'):
             row_num = rows[0]           # Row number
             seat_num = rows[1]          # Column number
             passenger_name = rows[2]    # Passenger name
-            # print(row_num, seat_num, passenger_name )
 
             # Check if the row exist in the list, if not create one
             if self.seating_avail.__contains__(row_num):
@@ -82,7 +78,6 @@ class AirlineReservation:
             else:
                 self.seating_avail[row_num] = {}
                 self.seating_avail[row_num][seat_num] = passenger_name
-        # print("Loaded seating layout is: ", self.seating_avail )
         conn.close()
 
     def insert_dbrecord(self, query, values, db_name='airline_seating.db'):
@@ -149,27 +144,22 @@ class AirlineReservation:
 
         self.consecutive_seats.clear()      # Tuples to store consecutive seats
         self.separated_seats.clear()        # Tuples to store non-consecutive seats
-        # print("______________",self.seating_avail)
         # Iterating over seating_avail
         for row_key, row_values in self.seating_avail.items():
             if self.consecutive_seats.__len__() >= passenger_count:
                 break;  # Break the loop, found conseccutive seats
             else:
                 self.consecutive_seats.clear()
-                # print("Sequence broken, resetting the consecutive pattern")
             # Iterating through each row
             for col in self.seating_pattern:
                 # Check if passenger name is empty, this implies there is no seat allocation (the seat is available)
                 if row_values.__contains__(col):
                     if row_values[col] == "":
-                        # print("Seat is available in row ", row_key, " column ", col)
                         self.consecutive_seats.append((row_key, col))
                         self.separated_seats.append((row_key, col))
                     else:
                         # Sequence broken, resetting the consecutive pattern
                         self.consecutive_seats.clear()
-                        # print(self.consecutive_seats.__len__(), " Consecutive seats are: " , self.consecutive_seats)
-                        # print(self.separated_seats.__len__()," Separated Seats are: ", self.separated_seats)
 
     def load_metrics(self, db_name='airline_seating.db'):
         """
