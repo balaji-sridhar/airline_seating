@@ -106,6 +106,44 @@ class AirlineTests(unittest.TestCase):
         # Clean up temp database
         os.remove(tempdb)
 
+            def test_csv_loader(self):
+        self.longMessage = True
+        # Given - A csv file with 100 rows are available
+        testdb = "test_data\\empty_seating.db"
+        tempdb = "test_data\\temp_empty_seating.db"
+        tempcsv = "test_data\\test_bookings.csv"
+        copyfile(testdb, tempdb)
+        # When - Reservation requests in the files are processed
+        self.airlineReservation.load_seating_layout(tempdb)
+        self.airlineReservation.read_bookings(tempcsv,tempdb)
+        # Then - Total number of requests handled in the session should be 100
+        self.assertEqual(5, self.airlineReservation.total_noof_reservation_req, 'Number of reservation request doesnt match')
+
+        os.remove(tempdb)
+
+    def test_check_seating_column(self):
+        self.longMessage = True
+        # Given - Seating layout with ACDF is defined in table rows_cols
+        testdb = "test_data\\empty_seating.db"
+        tempdb = "test_data\\temp_empty_seating.db"
+        copyfile(testdb, tempdb)
+        # When - Seating layout is loaded
+        self.airlineReservation.load_seating_layout(tempdb)
+        # Then - self.seating_layout[0][1] should be ACDF
+        self.assertEqual('ACDF', self.airlineReservation.seating_layout[0][1], 'Column layout doesnt match')
+        os.remove(tempdb)
+
+    def test_check_seating_row(self):
+        self.longMessage = True
+        # Given - Noof rows is 15 in rows_cols table
+        testdb = "test_data\\empty_seating.db"
+        tempdb = "test_data\\temp_empty_seating.db"
+        copyfile(testdb, tempdb)
+        # When - Seating layout is loaded
+        self.airlineReservation.load_seating_layout(tempdb)
+        # Then - self.seating_layout[0][0] should be 15
+        self.assertEqual(15, self.airlineReservation.seating_layout[0][0], 'Number of rows doesnt match')
+        os.remove(tempdb)
 
 if __name__ == '__main__':
     unittest.main()
