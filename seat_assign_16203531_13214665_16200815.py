@@ -10,15 +10,17 @@ import unittest
 from shutil import copyfile
 import os
 
-# This class is to allocate the flight tickets by reading the database fine
-# Following are the list of functions that needs to be part of this application
-# Reading the csv file and loading them in arrary/set
+# This class is to allocate the flight tickets by reading the database file
+# Contained withinthe class are a list of functions that need to be part of this application
+#These involve:
+# Reading the csv file and loading its contents in as an arrary/set
 # Query the database to find the seating availability
-# Query to update the reports- number of seats allocated to rejection
+# Query to update the reports- number of seats allocated or rejected
 # Seat allocation function
-# 	-- Find the next available sequence
-# 	-- If not check if the number total number of seats available is greater than request
-# 	-- If not reject the input
+# 	-- Find the next available sequence of seats available for booking
+# 	-- Check if the number total number of seats available is greater than request
+# 	-- If there are not enough seats, reject the booking.
+#   -- If theer are enough seats, aim to seat the party together, otherwise seat them as close together as feasible (split party)
 #
 
 
@@ -28,11 +30,11 @@ class AirlineReservation:
     seating_avail = {}          # Contains the seating availability, i.e snapshot of database
     consecutive_seats = []      # List to store consecutive seats for reservation
     separated_seats = []        # List to store separated seats for reservation
-    seating_pattern = 'ACDEF'   # Seating pattern of rows in the flight or columns in flight
-    total_rows = 15             # Total number of rows available in flight
-    total_noof_reservations = 0 # Total number of seats reserved in database
-    total_noof_refusal = 0      # Tracks the number of seats/passengers that application refused to allocate seat
-    total_noof_separation = 0    # Tracks the number of passenger allocated seats away for their group
+    seating_pattern = 'ACDEF'   # Seating pattern of rows and columns on the plane
+    total_rows = 15             # Total number of rows available on the plane
+    total_noof_reservations = 0 # Total number of seats reserved in the database
+    total_noof_refusal = 0      # Tracks the number of passengers that our application has rejected
+    total_noof_separation = 0    # Tracks the number of passenger in a split party
     total_noof_reservation_req = 0  # Total number of requests handled by the application in a session
 
     def load_seating_layout(self, db_name='airline_seating.db'):
@@ -40,12 +42,12 @@ class AirlineReservation:
         """
             load_seating_layout - This is used to store the flight plan into a variable
             and verify if the number of seats in the booking can be accommodated
-            continuously.
+            together.
         """
 
         conn = sq.connect(db_name)  # Connect to the database
         curs = conn.cursor()        # Open the cursor for executing query
-        # Iterate over the table, loads the first row to determine flight layout
+        # Iterate over the table, load the first row to determine flight layout
         # We assume that number of rows and column pattern is defined in first row or only one row is available
         for rows in curs.execute('SELECT * FROM rows_cols'):
             # print(rows)
@@ -67,7 +69,7 @@ class AirlineReservation:
         conn = sq.connect(db_name)
         # print("Connection value",conn)
         curs = conn.cursor()
-        # Iterate over seating table and load the current availability.
+        # Iterate over the seating table and load the current availability.
         for rows in curs.execute('SELECT * FROM seating'):
             row_num = rows[0]           # Row number
             seat_num = rows[1]          # Column number
@@ -85,15 +87,15 @@ class AirlineReservation:
 
     def insert_dbrecord(self, query, values, db_name='airline_seating.db'):
         """
-            insert_dbrecord - Inserts records into the database. Takes query to be executed and the values to be inserted
+            insert_dbrecord - Inserts records into the database. Takes the query to be executed and the values to be inserted
             as the parameters.
             :param query: Contains the SQLite query that needs to be executed
-            :param values: Contains the list of the values to be passed on the query before execution
-            :param db_name: Name of the database file to be processed
+            :param values: Contains the list of the values to be passed into the query before execution
+            :param db_name: Defines the name of the database file to be processed
 
         """
         conn = sq.connect(db_name)      # Connect to the database
-        # Check if the query passed is not empty, if not execute the query
+        # Check if the query passed is empty, if not execute the query
         if query != '' and query is not None:
             conn.execute(query, values)     # Execute the query
             conn.commit()                   # Commit the transaction
@@ -106,11 +108,11 @@ class AirlineReservation:
             Increases the number of refused and separated passengers in the metrics table
             :param refused: contains number of passengers refused
             :param separated: contains number of passengers whose allocation is separated
-            :param db_name: Name of the database file to be processed
+            :param db_name: Defines the name of the database file to be processed
             Sample insert query : insert into metrics (passengers_refused, passengers_separated) values (1,2)
 
         """
-        # Query to update the metrics, for each update_report call new row is appended
+        # Query to update the metrics, for each update_report call, a new row is appended
         query = '''insert into metrics (passengers_refused, passengers_separated) values (?,?);'''
         values = (refused, separated)
         # Calling insert_dbrecord to update values in the database
@@ -123,12 +125,12 @@ class AirlineReservation:
             :param passenger_name: Name of the passenger against which reservation has to made
             :param rowno: Row number where the reservation has to made
             :param seat: Seat number of the reservation to be made
-            :param db_name: Name of the database file to be processed
+            :param db_name: Defines the name of the database file to be processed
             Sample update query: update seating set name="Testing_Reservation1"  where row = 1 and seat = 'A';
 
         """
         # Query to update the seating table. Here for the selected row, passenger name is updated
-        # If passenger name is empty, its assumed as availability
+        # If passenger name is empty, the seat is assumed to be available
         query = ''' update seating set name= ?  where row = ? and seat = ? ; '''
         value = (passenger_name, rowno, seat)
         # Calling the insert_dbrecord() to update the seat allocation
@@ -138,12 +140,12 @@ class AirlineReservation:
         """
             check_seating_avail - Will iterate to all the rows and check if the seats can be allocated together
             1. Checks for togetherness
-            2. Checks if the number seats can be allocated randomly
-            3. Return the seats that can booked
+            2. Checks if the number seats can be allocated seperately
+            3. Return the seats that can be booked
         """
-        # Objective of this function is of two fold, we achieve this by iterating the seating_avail list
-        # 1. Find if at-least requested number of consecutive number of seats are available.
-        # 2. Find if at-least requested number of seats available, even if its not consecutive
+        # Objective of this function is two fold, we achieve this by iterating through the seating_avail list
+        # 1. Find if at-least the requested number of consecutive seats are available.
+        # 2. Find if at-least the requested number of seats available, even if its not consecutive
 
         self.consecutive_seats.clear()      # Tuples to store consecutive seats
         self.separated_seats.clear()        # Tuples to store non-consecutive seats
@@ -155,9 +157,9 @@ class AirlineReservation:
             else:
                 self.consecutive_seats.clear()
                 # print("Sequence broken, resetting the consecutive pattern")
-            # Iterating each row
+            # Iterating through each row
             for col in self.seating_pattern:
-                # Check if passenger name is empty, this implies there is no seat allocation
+                # Check if passenger name is empty, this implies there is no seat allocation (the seat is available)
                 if row_values.__contains__(col):
                     if row_values[col] == "":
                         # print("Seat is available in row ", row_key, " column ", col)
@@ -177,15 +179,15 @@ class AirlineReservation:
                     toatl_noof_sepration => toatl number of passengers seprated from each other
             :param db_name: Name of the database file to be processed
         """
-        # Load the metric table, iterate the rows and sum the value of each row
+        # Load the metric table, iterate through the rows and sum the value of each row
         # Load the seating table, count the number of empty seats (rows where passenger name is empty)
 
         conn = sq.connect(db_name)
         curs = conn.cursor()
 
-        # Counting the number of reservation
+        # Counting the number of reservations
         for rows in curs.execute('SELECT count(*) FROM seating where name != ""'):
-            # Obtain the number of seats whose passenger name is not null or not empty
+            # Obtain the number of seats whose passenger name is not empty
             self.total_noof_reservations = int(rows[0])
         print("Total number of reservations as of now: ", self.total_noof_reservations)
 
