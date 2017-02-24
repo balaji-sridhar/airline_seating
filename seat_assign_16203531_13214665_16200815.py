@@ -9,6 +9,7 @@ import csv
 import unittest
 from shutil import copyfile
 import os
+import sys
 
 # This class is to allocate the flight tickets by reading the database file
 # Contained withinthe class are a list of functions that need to be part of this application
@@ -257,6 +258,7 @@ if __name__ == "__main__":
         to starting point of the reservation system.
 
     """
-    print("Loading the classes")
+    print("Running Airline Reservation with following commandline argument:" ,sys.argv[1]," ",sys.argv[0] )
     airlineReserv = AirlineReservation()
-    airlineReserv.read_bookings()
+    # Passing commandline arguments
+    airlineReserv.read_bookings(sys.argv[2],sys.argv[1])
